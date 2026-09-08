@@ -1,0 +1,43 @@
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Build') {
+            steps {
+                echo "Building application..."
+                sh 'mvn clean package'
+            }
+        }
+
+        stage('Approval') {
+            when {
+                anyOf {
+                    branch 'qa'
+                    branch 'main'
+                }
+            }
+
+            steps {
+                input message: "Approve deployment?"
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+
+                    if (env.BRANCH_NAME == 'develop') {
+                        echo "Deploying to DEV"
+
+                    } else if (env.BRANCH_NAME == 'qa') {
+                        echo "Deploying to QA"
+
+                    } else if (env.BRANCH_NAME == 'main') {
+                        echo "Deploying to PROD"
+                    }
+                }
+            }
+        }
+    }
+}
